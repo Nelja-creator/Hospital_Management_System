@@ -4,6 +4,9 @@
  */
 package com.mycompany.hospital_management_system;
 
+import javax.swing.JOptionPane;
+import java.sql.*;
+
 /**
  *
  * @author HP
@@ -35,7 +38,7 @@ public class LoginFrame extends javax.swing.JFrame {
         btnLOGIN = new javax.swing.JButton();
         btnFORGOT = new javax.swing.JButton();
         txtUSER = new javax.swing.JTextField();
-        txtPASS = new javax.swing.JTextField();
+        txtPASS = new javax.swing.JPasswordField();
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -62,6 +65,8 @@ public class LoginFrame extends javax.swing.JFrame {
             }
         });
 
+        txtPASS.setText("jPasswordField1");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -70,14 +75,15 @@ public class LoginFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(txtPASS, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(txtUSER, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(61, 61, 61))
+                        .addComponent(txtUSER, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(61, 61, 61))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txtPASS, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(46, 46, 46))))
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(63, 63, 63)
                 .addComponent(btnLOGIN)
@@ -96,7 +102,7 @@ public class LoginFrame extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(txtPASS, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 53, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnLOGIN)
                     .addComponent(btnFORGOT))
@@ -118,7 +124,7 @@ public class LoginFrame extends javax.swing.JFrame {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(0, 30, Short.MAX_VALUE)
+                .addGap(0, 27, Short.MAX_VALUE)
                 .addComponent(jLabel1)
                 .addGap(30, 30, 30)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -140,6 +146,44 @@ public class LoginFrame extends javax.swing.JFrame {
 
     private void btnLOGINActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLOGINActionPerformed
         // TODO add your handling code here:
+        String user = txtUSER.getText().trim();
+    String pass; 
+        pass = new String(txtPASS.getPassword());
+
+    if (user.isEmpty() || pass.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Please enter both Username and Password");
+        return;
+    }
+
+    try {
+        Connection con = DatabaseConnection.getConnection();
+        
+        // Using your exact column names: username and password
+        String sql = "SELECT * FROM users WHERE username=? AND password=?";
+        PreparedStatement pst = con.prepareStatement(sql);
+        pst.setString(1, user);
+        pst.setString(2, pass);
+        
+        ResultSet rs = pst.executeQuery();
+
+        if (rs.next()) {
+            // Success! Let's grab the role_id to know who is logging in
+            int role = rs.getInt("role_id");
+            String activeUser = rs.getString("username");
+
+            JOptionPane.showMessageDialog(this, "Login Successful! Welcome " + activeUser);
+            
+            // Launch the Dashboard and pass the role_id if you want to hide certain panels
+            AdminDashboard dashboard = new AdminDashboard(role); 
+            dashboard.setVisible(true);
+            this.dispose(); 
+            
+        } else {
+            JOptionPane.showMessageDialog(this, "Invalid Username or Password", "Login Error", JOptionPane.ERROR_MESSAGE);
+        }
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Database Error: " + e.getMessage());
+    }
     }//GEN-LAST:event_btnLOGINActionPerformed
 
     private void btnFORGOTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFORGOTActionPerformed
@@ -179,7 +223,7 @@ public class LoginFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JTextField txtPASS;
+    private javax.swing.JPasswordField txtPASS;
     private javax.swing.JTextField txtUSER;
     // End of variables declaration//GEN-END:variables
 }
