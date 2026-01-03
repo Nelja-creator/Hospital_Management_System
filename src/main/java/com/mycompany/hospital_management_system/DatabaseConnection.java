@@ -14,9 +14,9 @@ import javax.swing.JOptionPane;
 public class DatabaseConnection {
     public static Connection getConnection(){
         try{
-            String url="";
-            String password="";
-            String username="";
+            String url="CONNECTION_URL_here";
+            String password="YOUR_PASSWORD_here";
+            String username="YOUR USERNAME_here";
             
             return
             DriverManager.getConnection(url,username,password);
@@ -27,3 +27,4 @@ public class DatabaseConnection {
     }
     
 }
+
